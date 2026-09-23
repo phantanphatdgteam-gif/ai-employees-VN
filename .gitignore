@@ -61,3 +61,8 @@ Thumbs.db
 .env.*
 !.env.example
 .claude/settings.local.json
+# The ECC Memory Vault keeps each person's project memories here and guards them with its own .gitignore.
+# Only the project scope is ignored, so shared memories under .ecc/memory/team/ can still be committed.
+.ecc/memory/project/
+# Metrics the rune plugin writes when it runs in this folder.
+.rune/
