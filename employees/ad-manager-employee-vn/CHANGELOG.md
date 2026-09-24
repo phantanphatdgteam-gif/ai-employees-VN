@@ -2,6 +2,14 @@
 
 The version this kit ships as lives in `VERSION` at the root. This file is written by the people who publish the kit and **no routine ever writes it**. Your own improvements go to `improvements/CHANGELOG.md`, which is a different file and stays yours.
 
+## 1.9.1, 2026-09-24
+
+`scripts/copy-check.mjs` no longer fails every check because of the proof inventory's own format line.
+
+- `ads-account-intake` writes `plan/proof-inventory.md` exactly as `CONTRACT.md` shows it, and that template carries `Format: <the exact string that may appear in copy> | <ledger path it was read from> | <YYYY-MM-DD>` under `## Agent sourced`. The script read that line as an agent sourced entry without a real date, so every copy check in the install failed with a `proof-inventory` violation whatever the text said. A line that starts with `Format:` and still holds a `<...>` placeholder is now skipped as documentation. A real entry without a ledger path or a date is still rejected.
+- Reading and parsing are split (`parseProof(text)`), so the selftest runs the template through the parser: one new check, "proof inventory format line is not an entry".
+- The same fix as Ad Manager Employee 1.8.1. `scripts/` stays byte identical to the original kit.
+
 ## 1.9.0, 2026-09-24
 
 The Vietnam localization pass: `ad-manager-employee-vn` is a localized variant of `ad-manager-employee` 1.8.0, built from the Vietnamese expert form for the Ad Manager role (Phần A and sections B-1 to B-7). The form was filled by an AI and no clause has yet been confirmed by a Vietnamese practitioner.

@@ -3,7 +3,7 @@
   "slug": "customer-satisfaction-employee",
   "name": "Customer Satisfaction Employee",
   "role": "Support and retention",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "standard": "1.4",
   "repository": "https://github.com/markfulton/ai-employees",
   "license": "MIT",
