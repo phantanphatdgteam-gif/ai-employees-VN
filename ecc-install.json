@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "target": "claude-project",
+  "modules": [],
+  "options": {
+    "delivery": "plugin",
+    "plugin": "ecc@ecc",
+    "enabledIn": ".claude/settings.json",
+    "note": "ECC is used as a Claude Code plugin enabled in .claude/settings.json. No ECC component is installed into this repository: .claude/rules, .claude/hooks and .claude/memory.md are written for this repository, and nothing under .claude is copied from ECC."
+  }
+}
