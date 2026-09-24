@@ -82,7 +82,7 @@ export function writeReceipt(dst, slug, version) {
   return receipt;
 }
 
-function changelogBetween(dir, from, to) {
+function changelogBetween(dir, from) {
   const p = path.join(dir, "CHANGELOG.md");
   if (!fs.existsSync(p)) return [];
   const lines = fs.readFileSync(p, "utf8").split(/\r?\n/);
@@ -175,7 +175,7 @@ export function upgrade({ installed, fresh, slug, apply, out, fail }) {
     out("");
   }
 
-  const notes = changelogBetween(fresh, installedVersion, newVersion).filter((l) => l.trim());
+  const notes = changelogBetween(fresh, installedVersion).filter((l) => l.trim());
   if (notes.length) {
     out("What changed between " + installedVersion + " and " + newVersion + ":");
     for (const l of notes.slice(0, 40)) out("  " + l);
