@@ -2,6 +2,14 @@
 
 The version this kit ships as lives in `VERSION` at the root. This file is written by the people who publish the kit and **no routine ever writes it**. Your own improvements go to `improvements/CHANGELOG.md`, which is a different file and stays yours.
 
+## 1.9.1, 2026-09-24
+
+`scripts/copy-check.mjs` no longer fails every check because of the proof inventory's own format line.
+
+- `sales-desk-setup` writes `strategy/proof-inventory.md` exactly as `CONTRACT.md` shows it, and that template carries `Format: <the exact string that may appear in copy> | <ledger path it was read from> | <YYYY-MM-DD>` under `## Agent sourced`. The script read that line as an agent sourced entry without a real date, so every copy check in the install failed with a `proof-inventory` violation whatever the text said. A line that starts with `Format:` and still holds a `<...>` placeholder is now skipped as documentation. A real entry without a ledger path or a date is still rejected.
+- Reading and parsing are split (`parseProof(text)`), so the selftest runs the template through the parser: one new check, "proof inventory format line is not an entry".
+- The same fix as Sales Employee 1.8.1. `scripts/` stays byte identical to the original kit.
+
 ## 1.9.0, 2026-09-24
 
 The Vietnam variant, `sales-employee-vn`: a localized version of the Sales Employee 1.8.0, built from the Vietnamese expert form for this role (07, Sales) and its dated source index, with the routines kept in English and every line the member reads written in Vietnamese. The form was filled by an AI and reviewed by the project owner; no Vietnamese sales practitioner has confirmed a rule yet.

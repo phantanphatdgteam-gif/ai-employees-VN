@@ -376,7 +376,12 @@ function loadProof(root) {
   const file = path.join(root, "strategy", "proof-inventory.md");
   const text = readIfPresent(file);
   if (text === null) return { allowed: "", structural: [], source: "missing" };
+  return parseProof(text);
+}
 
+// Reading and parsing are split so the selftest can run the contract's own
+// proof inventory template through the parser.
+function parseProof(text) {
   const sections = sectionsOf(text);
   const memberLines = sections.get("member claims") || [];
   const agentLines = sections.get("agent sourced") || [];
@@ -391,6 +396,9 @@ function loadProof(root) {
   for (const line of agentLines) {
     const trimmed = line.trim();
     if (!trimmed || trimmed.startsWith("<!--")) continue;
+    // The contract's own "Format: <claim> | <ledger path> | <YYYY-MM-DD>" line
+    // documents the shape of an entry. It is not an entry.
+    if (/^format\s*:/i.test(trimmed) && /<[^>]+>/.test(trimmed)) continue;
     // Commentary under the heading carries neither a digit nor a pipe. A real
     // agent sourced entry is a number, so it carries at least one of the two.
     const looksLikeEntry = /\d/.test(trimmed) || trimmed.includes("|");
@@ -703,9 +711,27 @@ function selftest() {
       found.map((f) => f.rule + "@" + f.line).join(", ") + ")\n");
   }
 
+  // The contract's proof inventory template carries a "Format:" line with
+  // placeholders under ## Agent sourced. It documents the shape of an entry
+  // and must never fail a check, while a real entry with no date still does.
+  const proofTemplate = parseProof("## Member claims\nWritten only by the member.\n\n## Agent sourced\n" +
+    "Append only.\n" +
+    "Format: <the exact string that may appear in copy> | <ledger path it was read from> | <YYYY-MM-DD>\n" +
+    "A line with no ledger path is invalid and copy-check rejects the file.\n" +
+    "42% reply rate | ledger/replies.jsonl | 2026-09-01\n" +
+    "15 meetings booked | ledger/pipeline.jsonl\n");
+  if (proofTemplate.structural.length === 1 && proofTemplate.structural[0].startsWith("15 meetings") &&
+      proofTemplate.allowed.includes("42% reply rate")) {
+    process.stdout.write("  ok    proof inventory format line is not an entry\n");
+  } else {
+    failures++;
+    process.stdout.write("  FAIL  proof inventory format line is not an entry (structural: " +
+      proofTemplate.structural.join(" / ") + ")\n");
+  }
+
   process.stdout.write(failures === 0
-    ? "copy-check: selftest PASS (" + (cases.length + 1) + " checks)\n"
-    : "copy-check: selftest FAIL (" + failures + " of " + (cases.length + 1) + ")\n");
+    ? "copy-check: selftest PASS (" + (cases.length + 2) + " checks)\n"
+    : "copy-check: selftest FAIL (" + failures + " of " + (cases.length + 2) + ")\n");
   process.exit(failures === 0 ? 0 : 1);
 }
 
