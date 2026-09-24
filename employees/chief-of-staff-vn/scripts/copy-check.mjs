@@ -346,20 +346,6 @@ function sectionsOf(markdown) {
   return out;
 }
 
-function listItems(lines) {
-  const items = [];
-  for (const raw of lines || []) {
-    let line = raw.trim();
-    if (!line || line.startsWith("<!--")) continue;
-    line = line.replace(/^[-*+]\s+/, "").replace(/^\d+\.\s+/, "");
-    line = line.replace(/^["'`“‘]|["'`”’]$/g, "").trim();
-    if (line.startsWith("|")) continue; // a table row is not a list item
-    if (!line) continue;
-    items.push(line);
-  }
-  return items;
-}
-
 function loadVoice() {
   // One source, shipped, and no file read. A member who wants a word added
   // writes a line into the Corrections section of the routine that keeps
