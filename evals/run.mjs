@@ -145,6 +145,66 @@ const evals = [
       return problems;
     },
   },
+  {
+    id: "vn-variant-wiring",
+    rule: "A Vietnam variant (<kit>-vn) sits beside its original kit and is registered in installer/cli.mjs, listed in skills/hire/SKILL.md and linked from the root CHANGELOG.md.",
+    run() {
+      const problems = [];
+      const installer = read(path.join(ROOT, "installer", "cli.mjs"));
+      const hire = read(path.join(ROOT, "skills", "hire", "SKILL.md"));
+      const changelog = read(path.join(ROOT, "CHANGELOG.md"));
+      for (const kit of kits.filter((k) => k.endsWith("-vn"))) {
+        const original = kit.slice(0, -"-vn".length);
+        if (!kits.includes(original)) problems.push(kit + ": no original kit employees/" + original);
+        if (!installer.includes('"' + kit + '"')) problems.push(kit + ": not registered in installer/cli.mjs");
+        if (!hire.includes("`" + kit + "`")) problems.push(kit + ": no row in skills/hire/SKILL.md");
+        if (!changelog.includes("employees/" + kit + "/CHANGELOG.md")) problems.push(kit + ": root CHANGELOG.md does not link employees/" + kit + "/CHANGELOG.md");
+      }
+      return problems;
+    },
+  },
+  {
+    id: "vn-scripts-identical",
+    rule: "A Vietnam variant never changes its kit's scripts: every file under <kit>-vn/scripts is byte identical to the original kit's.",
+    run() {
+      const problems = [];
+      for (const kit of kits.filter((k) => k.endsWith("-vn"))) {
+        const orig = path.join(EMPLOYEES, kit.slice(0, -"-vn".length), "scripts");
+        const vari = path.join(EMPLOYEES, kit, "scripts");
+        const names = new Set([...walk(orig).map((f) => path.relative(orig, f)), ...walk(vari).map((f) => path.relative(vari, f))]);
+        for (const name of [...names].sort()) {
+          const a = path.join(orig, name);
+          const b = path.join(vari, name);
+          if (!fs.existsSync(a)) problems.push(kit + ": scripts/" + name + " is not in the original kit");
+          else if (!fs.existsSync(b)) problems.push(kit + ": scripts/" + name + " is missing");
+          else if (!fs.readFileSync(a).equals(fs.readFileSync(b))) problems.push(kit + ": scripts/" + name + " differs from the original");
+        }
+      }
+      return problems;
+    },
+  },
+  {
+    id: "vn-corrections-untouched",
+    rule: "A Vietnam variant leaves the member's ## Corrections section of every routine (from that heading to the next level two heading) exactly as the original kit ships it.",
+    run() {
+      const problems = [];
+      const tail = (text) => {
+        const cut = text.lastIndexOf("\n## Corrections");
+        if (cut < 0) return null;
+        const next = text.indexOf("\n## ", cut + 1);
+        return next < 0 ? text.slice(cut) : text.slice(cut, next);
+      };
+      for (const kit of kits.filter((k) => k.endsWith("-vn"))) {
+        const origDir = path.join(EMPLOYEES, kit.slice(0, -"-vn".length), "routines");
+        for (const id of fs.readdirSync(origDir).sort()) {
+          const b = path.join(EMPLOYEES, kit, "routines", id, "SKILL.md");
+          if (!fs.existsSync(b)) { problems.push(kit + ": routine " + id + " is missing"); continue; }
+          if (tail(read(path.join(origDir, id, "SKILL.md"))) !== tail(read(b))) problems.push(kit + ": " + id + " changed its ## Corrections section");
+        }
+      }
+      return problems;
+    },
+  },
 ];
 
 if (args.has("--write-baseline")) {
